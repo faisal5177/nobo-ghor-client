@@ -7,7 +7,8 @@ import SocialLogin from "../shared/SocialLogin";
 
 const SignIn = () => {
     const { signInUser } = useContext(AuthContext);
-    const location = useLocation();
+    const location = useLocation()
+    console.log('in signIn page', location);
 
     console.log('in signIn page', location);
 
