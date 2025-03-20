@@ -1,27 +1,50 @@
 import React, { useState } from "react";
+import { useLoaderData, useNavigate } from "react-router-dom";
 
-const BookingModal = ({ service, onClose }) => {
+const ServiceBook = ({ onClose }) => {
+    const service = useLoaderData();
+    const navigate = useNavigate();
+
+    if (!service) {
+        return <div>Loading service details...</div>;
+    }
+
     const { _id, service_name, service_image, price, service_provider } = service;
-    const { name: provider_name, email: provider_email } = service_provider;
+    const { name: provider_name, email: provider_email } = service_provider || {};
 
-    // Dummy user details (Replace with actual logged-in user)
     const currentUser = {
         name: "John Doe",
         email: "johndoe@example.com"
     };
 
-    // State for editable fields
     const [bookingDetails, setBookingDetails] = useState({
         serviceDate: "",
-        specialInstructions: ""
+        specialInstructions: [],
     });
 
-    // Handle input change
     const handleChange = (e) => {
         setBookingDetails({ ...bookingDetails, [e.target.name]: e.target.value });
     };
 
-    // Handle booking submission
+    const problemOptions = [
+        "Leaking pipe",
+        "Need electrical repair",
+        "Roof leakage needs fixing",
+        "Door or window repair needed",
+        "Painting and coloring work required",
+        "Furniture needs fixing",
+    ];
+
+    const handleProblemChange = (e) => {
+        const { value, checked } = e.target;
+        setBookingDetails((prev) => ({
+            ...prev,
+            specialInstructions: checked
+                ? [...prev.specialInstructions, value]
+                : prev.specialInstructions.filter((item) => item !== value),
+        }));
+    };
+
     const handleBooking = () => {
         const bookingData = {
             serviceId: _id,
@@ -32,12 +55,11 @@ const BookingModal = ({ service, onClose }) => {
             user_email: currentUser.email,
             user_name: currentUser.name,
             serviceDate: bookingDetails.serviceDate,
-            specialInstructions: bookingDetails.specialInstructions,
+            specialInstructions: bookingDetails.specialInstructions, 
             price,
-            serviceStatus: "pending"
+            serviceStatus: bookingDetails.specialInstructions.join(", ") || "No problems selected"
         };
 
-        // Send booking data to the server
         fetch("http://localhost:5000/bookings", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -47,7 +69,8 @@ const BookingModal = ({ service, onClose }) => {
         .then((data) => {
             if (data.insertedId) {
                 alert("Booking Successful!");
-                onClose(); // Close the modal
+                onClose();
+                navigate("/booked-services");  
             }
         })
         .catch((error) => console.error("Error:", error));
@@ -57,8 +80,6 @@ const BookingModal = ({ service, onClose }) => {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
             <div className="bg-white p-6 rounded-lg shadow-md w-96">
                 <h2 className="text-xl font-bold mb-4">Book Service</h2>
-                
-                {/* Readonly Fields */}
                 <div className="space-y-2">
                     <p><strong>Service:</strong> {service_name}</p>
                     <p><strong>Provider:</strong> {provider_name} ({provider_email})</p>
@@ -66,7 +87,6 @@ const BookingModal = ({ service, onClose }) => {
                     <p><strong>Price:</strong> ${price}</p>
                 </div>
 
-                {/* Editable Fields */}
                 <div className="mt-4">
                     <label className="block text-sm font-medium">Service Date</label>
                     <input 
@@ -79,19 +99,26 @@ const BookingModal = ({ service, onClose }) => {
                 </div>
                 
                 <div className="mt-4">
-                    <label className="block text-sm font-medium">Special Instructions</label>
-                    <textarea 
-                        name="specialInstructions"
-                        className="border p-2 w-full rounded"
-                        placeholder="Enter any additional details..."
-                        value={bookingDetails.specialInstructions}
-                        onChange={handleChange}
-                    ></textarea>
+                    <label className="block text-sm font-medium">Select Problems</label>
+                    <div className="border p-2 w-full rounded bg-gray-100">
+                        {problemOptions.map((problem, index) => (
+                            <div key={index} className="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    id={`problem-${index}`}
+                                    value={problem}
+                                    checked={bookingDetails.specialInstructions.includes(problem)}
+                                    onChange={handleProblemChange}
+                                    className="mr-2"
+                                />
+                                <label htmlFor={`problem-${index}`}>{problem}</label>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
-                {/* Buttons */}
                 <div className="flex justify-end mt-4">
-                    <button className="btn btn-secondary mr-2" onClick={onClose}>Cancel</button>
+                    <button className="btn btn-secondary mr-2" onClick={() => navigate("/")}>Cancel</button> 
                     <button className="btn btn-primary" onClick={handleBooking}>Purchase</button>
                 </div>
             </div>
@@ -99,4 +126,4 @@ const BookingModal = ({ service, onClose }) => {
     );
 };
 
-export default BookingModal;
+export default ServiceBook;

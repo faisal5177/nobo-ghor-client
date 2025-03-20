@@ -9,8 +9,7 @@ const SignIn = () => {
     const { signInUser } = useContext(AuthContext);
     const location = useLocation()
     console.log('in signIn page', location);
-
-    console.log('in signIn page', location);
+    const from = location || '/';
 
     const handleSignIn = (e) => {
         e.preventDefault();
@@ -32,6 +31,7 @@ const SignIn = () => {
             .then(result => {
                 console.log('sign in', result.user.email);
                 const user = { email: result.user.email };
+                navigator(from, user);
             });
     };
 
