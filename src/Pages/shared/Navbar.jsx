@@ -24,7 +24,7 @@ const Navbar = () => {
         <a>Item 2</a>
       </li>
       <li>
-      <Link to="/bookedServices">Booked Services</Link>
+      <Link to="/bookedServices">My Booked Services</Link>
       </li>
     </>
   );
